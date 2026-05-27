@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chart New Waters: 16 PRs in One Week</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0c0b;
+    --surface: #161614;
+    --surface2: #1e1d1b;
+    --border: rgba(255,255,255,0.07);
+    --border-strong: rgba(255,255,255,0.14);
+    --text: #e6e2da;
+    --text-muted: #7a776f;
+    --text-dim: #4a4843;
+    --accent: #3ecfbe;
+    --accent2: #e8714a;
+    --accent-faint: rgba(62,207,190,0.08);
+    --code-bg: #1a1918;
+    --tag-merged: rgba(62,207,190,0.12);
+    --tag-merged-text: #3ecfbe;
+    --tag-review: rgba(232,113,74,0.12);
+    --tag-review-text: #e8714a;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── Progress bar ─── */
+  #progress {
+    position: fixed; top: 0; left: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    width: 0%; z-index: 999; transition: width 0.1s linear;
+  }
+
+  /* ─── Grain overlay ─── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+    opacity: 0.4;
+  }
+
+  /* ─── Layout ─── */
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative; z-index: 1;
+  }
+
+  /* ─── Header / Hero ─── */
+  .hero {
+    padding: 5rem 0 3.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--accent); font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 1.5rem;
+  }
+  .hero-eyebrow span.dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent); display: inline-block;
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: #f0ede7;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--accent);
+    font-weight: 300;
+  }
+
+  .hero-sub {
+    font-size: 1rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    max-width: 580px;
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+  }
+
+  .hero-meta {
+    margin-top: 2rem;
+    display: flex; align-items: center; gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .hero-meta-item {
+    font-size: 12px; color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .hero-meta-item::before { content: '—'; color: var(--text-dim); }
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 2px 10px; border-radius: 100px;
+    font-size: 11px; font-family: 'JetBrains Mono', monospace;
+    border: 1px solid;
+  }
+  .badge-merged { background: var(--tag-merged); color: var(--tag-merged-text); border-color: rgba(62,207,190,0.25); }
+  .badge-review { background: var(--tag-review); color: var(--tag-review-text); border-color: rgba(232,113,74,0.25); }
+
+  /* ─── Article body ─── */
+  article { padding: 3.5rem 0 6rem; }
+
+  article > * + * { margin-top: 1.75rem; }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.65rem; font-weight: 600;
+    color: #f0ede7; line-height: 1.25;
+    margin-top: 3.5rem; margin-bottom: 1rem;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; font-weight: 500;
+    color: var(--accent2); text-transform: uppercase;
+    letter-spacing: 0.08em; font-size: 0.78rem;
+    margin-top: 2.5rem; margin-bottom: 0.75rem;
+  }
+
+  p { color: var(--text); }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(62,207,190,0.3);
+    transition: border-color 0.15s, color 0.15s;
+  }
+  a:hover { color: #7eddd5; border-color: rgba(126,221,213,0.6); }
+
+  strong { color: #f0ede7; font-weight: 500; }
+
+  /* ─── Disclosure box ─── */
+  .disclosure {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+  .disclosure strong { color: var(--accent2); }
+
+  /* ─── Pull quote ─── */
+  blockquote {
+    border-left: 2px solid var(--accent);
+    padding: 0.25rem 0 0.25rem 1.5rem;
+    margin: 2rem 0;
+  }
+  blockquote p {
+    font-family: 'Fraunces', serif;
+    font-size: 1.25rem; font-weight: 300;
+    font-style: italic; color: #d4d0c8;
+    line-height: 1.5;
+  }
+
+  /* ─── Section divider ─── */
+  .divider {
+    display: flex; align-items: center; gap: 1rem;
+    margin: 3rem 0;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1;
+    height: 1px; background: var(--border);
+  }
+  .divider span {
+    font-size: 11px; color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.1em; white-space: nowrap;
+  }
+
+  /* ─── Code blocks ─── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: #c9c5bc;
+    position: relative;
+  }
+  pre::before {
+    content: attr(data-lang);
+    position: absolute; top: 0.6rem; right: 1rem;
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-dim); font-family: 'JetBrains Mono', monospace;
+  }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.83em;
+    background: rgba(255,255,255,0.06);
+    padding: 2px 6px; border-radius: 4px;
+    color: #c9c5bc;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+
+  .kw { color: #e8714a; }
+  .str { color: #3ecfbe; }
+  .cm { color: #4a4843; font-style: italic; }
+  .val { color: #c8a55a; }
+
+  /* ─── PR Table ─── */
+  .pr-table-wrap {
+    margin: 2rem 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .pr-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .pr-table thead {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .pr-table th {
+    padding: 0.8rem 1rem;
+    text-align: left; color: var(--text-muted);
+    font-weight: 500; font-size: 0.75rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .pr-table td {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .pr-table tbody tr { transition: background 0.12s; }
+  .pr-table tbody tr:hover { background: rgba(255,255,255,0.025); }
+  .pr-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .pr-source { font-weight: 500; color: #f0ede7; }
+  .pr-desc { color: var(--text-muted); font-size: 0.84rem; }
+  .status-dot {
+    display: inline-block;
+    width: 7px; height: 7px; border-radius: 50%;
+    margin-right: 5px; vertical-align: 1px;
+  }
+  .dot-merged { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .dot-approved { background: #a3e8b0; box-shadow: 0 0 6px #a3e8b0; }
+  .dot-review { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+
+  /* ─── Stat row ─── */
+  .stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
+    background: var(--border); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden; margin: 2.5rem 0;
+  }
+  .stat {
+    background: var(--surface);
+    padding: 1.5rem; text-align: center;
+  }
+  .stat-num {
+    display: block; font-family: 'Fraunces', serif;
+    font-size: 2.4rem; font-weight: 600;
+    color: var(--accent); line-height: 1;
+    margin-bottom: 0.4rem;
+  }
+  .stat-label {
+    font-size: 0.78rem; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ─── Lesson cards ─── */
+  .lesson {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 1.5rem 1.75rem;
+    margin-top: 2rem;
+  }
+  .lesson-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; color: var(--accent);
+    text-transform: uppercase; letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
+  }
+  .lesson h4 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.1rem; font-weight: 400;
+    color: #f0ede7; margin-bottom: 0.75rem;
+  }
+  .lesson p { font-size: 0.95rem; color: var(--text-muted); }
+
+  /* ─── Footer ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 0;
+    position: relative; z-index: 1;
+  }
+  .footer-links {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.5rem;
+  }
+  .footer-link {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.85rem; color: var(--text-muted);
+    border-bottom: none; padding: 0.4rem 0;
+    transition: color 0.15s;
+  }
+  .footer-link:hover { color: var(--accent); }
+  .footer-link-icon {
+    width: 16px; height: 16px; opacity: 0.5;
+    flex-shrink: 0;
+  }
+  .footer-note {
+    margin-top: 2.5rem; padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.82rem; color: var(--text-dim);
+    font-style: italic; font-family: 'Fraunces', serif;
+  }
+
+  /* ─── Tags ─── */
+  .tags {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    margin-top: 3rem;
+  }
+  .tag {
+    font-size: 0.75rem; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-dim); padding: 4px 10px;
+    border: 1px solid var(--border); border-radius: 100px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tag:hover { color: var(--accent); border-color: rgba(62,207,190,0.3); }
+
+  @media (max-width: 600px) {
+    .hero { padding: 3rem 0 2.5rem; }
+    .stats { grid-template-columns: 1fr; }
+    .pr-table th:last-child, .pr-table td:last-child { display: none; }
+    .wrap { padding: 0 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<div class="wrap">
+
+  <!-- ─── HERO ─── -->
+  <header class="hero">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      Hackathon · Open Source · WeMakeDevs
+    </div>
+    <h1>Chart New Waters:<br><em>16 PRs in One Week</em> —<br>What Open-Source Actually Teaches You</h1>
+    <p class="hero-sub">What AI could and couldn't do, what a code review actually teaches you, and why querying n8n workflows directly in SQL was just the beginning.</p>
+    <div class="hero-meta">
+      <span class="hero-meta-item">Pirates of the Coral-bean Hackathon</span>
+      <span class="hero-meta-item">May 2025</span>
+      <span class="hero-meta-item"><a href="https://github.com/wiz-abhi" target="_blank">@wiz-abhi</a></span>
+    </div>
+  </header>
+
+  <!-- ─── ARTICLE ─── -->
+  <article>
+
+    <!-- Disclosure -->
+    <div class="disclosure">
+      <strong>Full disclosure:</strong> I used an AI coding agent — <strong>Antigravity (powered by Claude)</strong> — to help implement most of these source specs. The hackathon explicitly requires declaring AI tool usage, and hiding it would make this post dishonest. But this post isn't really about that. It's about what happened <em>after</em> the AI wrote the first draft.
+    </div>
+
+    <h2>How It Started</h2>
+
+    <p>The <strong>Pirates of the Coral-bean</strong> hackathon, organized by <a href="https://www.wemakedevs.org" target="_blank">WeMakeDevs</a> and <a href="https://www.linkedin.com/in/kunal-kushwaha/" target="_blank">Kunal Kushwaha</a>, kicked off May 25th with a simple premise: build agents using <a href="https://github.com/withcoral/coral" target="_blank">Coral</a> — an open-source tool that lets you query any API, database, or file as if it were a SQL table.</p>
+
+    <p>I was exploring Track 2 (Personal Agent), but when I discovered the hackathon's <strong>Chart New Waters</strong> challenge — build new source specs, get them accepted by the Coral team, and earn bounties for each one — I knew exactly where to put my energy. Every new source grows the reef. So I started building.</p>
+
+    <p>One contribution turned into two. Two turned into sixteen.</p>
+
+    <h2>What Is Coral?</h2>
+
+    <p>Coral gives you a single SQL interface over any API, database, or file. Instead of writing custom fetch logic, pagination handlers, and auth wrappers for every API you need, you define a <code>manifest.yaml</code> — and Coral handles everything from auth to rate limiting to cross-source joins.</p>
+
+    <p>The magic is that sources join like database tables:</p>
+
+    <pre data-lang="SQL"><span class="kw">SELECT</span> w.title, w.extract, m.artist_name
+<span class="kw">FROM</span> wikipedia.pages w
+<span class="kw">JOIN</span> musicbrainz.artists m <span class="kw">ON</span> m.name = w.title
+<span class="kw">WHERE</span> w.title = <span class="str">'David Bowie'</span>;</pre>
+
+    <p>No ETL. No glue code. Just SQL across two live APIs. That's what I spent this week building out.</p>
+
+    <div class="divider"><span>16 contributions</span></div>
+
+    <h2>The 16 PRs: What I Actually Built</h2>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-num">13</span>
+        <span class="stat-label">Merged</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">2</span>
+        <span class="stat-label">Approved</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">1</span>
+        <span class="stat-label">In Review</span>
+      </div>
+    </div>
+
+    <p>Here's the full list of sources I contributed to the <a href="https://github.com/withcoral/coral" target="_blank">Coral repository</a>:</p>
+
+    <div class="pr-table-wrap">
+      <table class="pr-table">
+        <thead>
+          <tr>
+            <th>PR</th>
+            <th>Source</th>
+            <th>What It Unlocks</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="pr-num">#681</td>
+            <td class="pr-source">n8n</td>
+            <td class="pr-desc">Workflow automation — query executions, workflows, credentials</td>
+            <td><span class="status-dot dot-merged"></span><span class="badge badge-merged">Merged</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#719</td>
+            <td class="pr-source">Auth0</td>
+            <td class="pr-desc">Identity management — users, roles, logs, tenants</td>
+            <td><span class="status-dot dot-merged"></span><span class="badge badge-merged">Merged</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#763</td>
+            <td class="pr-source">Trello</td>
+            <td class="pr-desc">Boards, cards, lists, members</td>
+            <td><span class="status-dot dot-merged"></span><span class="badge badge-merged">Merged</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#787</td>
+            <td class="pr-source">Wikipedia</td>
+            <td class="pr-desc">Full-text search and article extracts for any topic</td>
+            <td><span class="status-dot dot-merged"></span><span class="badge badge-merged">Merged</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#789</td>
+            <td class="pr-source">MusicBrainz</td>
+            <td class="pr-desc">Open music encyclopedia — artists, recordings, releases</td>
+            <td><span class="status-dot dot-merged"></span><span class="badge badge-merged">Merged</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#802</td>
+            <td class="pr-source">Jikan</td>
+            <td class="pr-desc">Anime &amp; manga metadata from MyAnimeList</td>
+            <td><span class="status-dot dot-merged"></span><span class="badge badge-merged">Merged</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#840</td>
+            <td class="pr-source">JSONPlaceholder</td>
+            <td class="pr-desc">Fake REST API — perfect for testing agents locally</td>
+            <td><span class="status-dot dot-merged"></span><span class="badge badge-merged">Merged</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#842</td>
+            <td class="pr-source">XKCD</td>
+            <td class="pr-desc">Every XKCD comic, queryable as SQL</td>
+            <td><span class="status-dot dot-merged"></span><span class="badge badge-merged">Merged</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#844</td>
+            <td class="pr-source">IP API</td>
+            <td class="pr-desc">Geolocation and network info for any IP address</td>
+            <td><span class="status-dot dot-merged"></span><span class="badge badge-merged">Merged</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#857</td>
+            <td class="pr-source">Advice Slip</td>
+            <td class="pr-desc">Random advice — surprisingly useful for testing</td>
+            <td><span class="status-dot dot-merged"></span><span class="badge badge-merged">Merged</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#858</td>
+            <td class="pr-source">Universities List</td>
+            <td class="pr-desc">World universities database with countries and domains</td>
+            <td><span class="status-dot dot-merged"></span><span class="badge badge-merged">Merged</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#859</td>
+            <td class="pr-source">Country State City</td>
+            <td class="pr-desc">Hierarchical geo data — countries → states → cities</td>
+            <td><span class="status-dot dot-merged"></span><span class="badge badge-merged">Merged</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#861</td>
+            <td class="pr-source">Dog CEO</td>
+            <td class="pr-desc">Random dog images by breed — try <code>WHERE breed = 'shiba'</code></td>
+            <td><span class="status-dot dot-merged"></span><span class="badge badge-merged">Merged</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#860</td>
+            <td class="pr-source">Cat Facts</td>
+            <td class="pr-desc">Random cat facts — open, approved ✅</td>
+            <td><span class="status-dot dot-approved"></span><span class="badge badge-merged">Approved</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#856</td>
+            <td class="pr-source">Open Notify (ISS)</td>
+            <td class="pr-desc">Live location of the International Space Station — open, approved ✅</td>
+            <td><span class="status-dot dot-approved"></span><span class="badge badge-merged">Approved</span></td>
+          </tr>
+          <tr>
+            <td class="pr-num">#838</td>
+            <td class="pr-source">OpenAlex</td>
+            <td class="pr-desc">250M+ academic research papers and authors — in review 🔄</td>
+            <td><span class="status-dot dot-review"></span><span class="badge badge-review">In Review</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The range is intentional. Enterprise sources like <strong>Auth0</strong>, <strong>Trello</strong>, and <strong>n8n</strong> sit alongside knowledge sources like <strong>Wikipedia</strong>, <strong>MusicBrainz</strong>, and <strong>OpenAlex</strong>, alongside genuinely fun ones like <strong>Dog CEO</strong>, <strong>XKCD</strong>, and the ISS tracker. Every one of them is now a SQL table anyone can query.</p>
+
+    <div class="divider"><span>what the AI did — and where it stopped</span></div>
+
+    <h2>What the AI Did — and Where It Stopped</h2>
+
+    <p>A Coral source spec is a <code>manifest.yaml</code> file. You define the endpoint, auth method, tables, columns, and pagination strategy — and Coral maps everything to SQL.</p>
+
+    <p>Here's a simplified example from the n8n source:</p>
+
+    <pre data-lang="YAML"><span class="val">dsl_version</span>: 3
+<span class="val">name</span>: <span class="str">n8n</span>
+<span class="val">backend</span>: http
+<span class="val">base_url</span>: <span class="str">https://your-n8n-instance.com/api/v1</span>
+<span class="val">tables</span>:
+  - <span class="val">name</span>: <span class="str">workflows</span>
+    <span class="val">path</span>: <span class="str">/workflows</span>
+    <span class="val">method</span>: GET
+    <span class="val">columns</span>:
+      - <span class="val">name</span>: <span class="str">id</span>
+        <span class="val">type</span>: <span class="str">Utf8</span>
+        <span class="val">from</span>: id
+      - <span class="val">name</span>: <span class="str">name</span>
+        <span class="val">type</span>: <span class="str">Utf8</span>
+        <span class="val">from</span>: name
+      - <span class="val">name</span>: <span class="str">active</span>
+        <span class="val">type</span>: <span class="str">Boolean</span>
+        <span class="val">from</span>: active</pre>
+
+    <p>Here's exactly what Antigravity did well: given an API documentation URL, the existing source specs as reference, and strict rules about the Coral manifest schema, it drafted the initial YAML quickly. Boilerplate column definitions that would take me an hour took minutes.</p>
+
+    <p>Here's where it stopped cold:</p>
+
+    <ul style="padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; color: var(--text-muted);">
+      <li>It didn't decide <em>which</em> APIs to build or why they'd be valuable to the ecosystem</li>
+      <li>It couldn't tell when a type choice would silently break downstream SQL queries</li>
+      <li>It didn't understand the difference between an API that paginates via query string vs. one that embeds the page number in the URL path</li>
+      <li>When maintainers left review comments, the AI couldn't interpret <em>why</em> something was wrong — it could only act on instructions I gave it after I understood the feedback myself</li>
+    </ul>
+
+    <blockquote>
+      <p>Every review cycle required me to read the feedback, sit with it, understand the architecture, and then decide how to fix it. The AI was a fast drafting tool. The judgment was mine.</p>
+    </blockquote>
+
+    <div class="divider"><span>the real education</span></div>
+
+    <h2>What the Code Reviews Actually Taught Me</h2>
+
+    <p><strong><a href="https://github.com/jsummerfield" target="_blank">James Summerfield</a></strong>, Coral's CTO, reviewed my PRs during the middle of a hackathon sprint. His feedback was specific, direct, and always came with a reason. That's rarer than it sounds.</p>
+
+    <div class="lesson">
+      <div class="lesson-num">Lesson 01</div>
+      <h4>Types aren't labels — they define how SQL behaves</h4>
+      <p>Early on I was choosing column types based on what the API returned. If the API sent back a string, I'd store it as <code>Utf8</code>. Logical, right? James flagged this immediately on a source where I stored a numeric field as <code>Utf8</code>. With that type, <code>ORDER BY score ASC</code> doesn't sort numerically — it sorts <em>lexicographically</em>. So <code>10, 100, 2, 20, 9</code> — no error, no warning, just silently wrong results. The fix is <code>Float64</code>. The lesson is to think from "what does SQL behavior look like for this type", not just "what format does the API use".</p>
+    </div>
+
+    <div class="lesson">
+      <div class="lesson-num">Lesson 02</div>
+      <h4>The gap between what a framework expects and what an API does</h4>
+      <p>Some APIs paginate via a page number in the query string (<code>?page=2</code>). Others embed it in the URL path (<code>/results/2</code>). Coral's default pagination assumes query string — so path-based APIs break with a <code>400 Bad Request</code> because they reject unrecognized query parameters. The solution required reading Coral's pagination implementation directly and understanding what it appends and when. That kind of problem doesn't exist in tutorials — it only appears when you're integrating a real API against a real framework.</p>
+    </div>
+
+    <div class="lesson">
+      <div class="lesson-num">Lesson 03</div>
+      <h4>Schema hygiene at scale — YAML anchors</h4>
+      <p>For sources with multiple tables sharing the same column structure, I was copy-pasting the schema. James pointed out that this creates drift — if one table gets updated and the other doesn't, the source becomes inconsistent. The fix:</p>
+
+      <pre data-lang="YAML" style="margin-top: 1rem;"><span class="val">tables</span>:
+  - <span class="val">name</span>: <span class="str">table_a</span>
+    <span class="val">columns</span>: <span class="kw">&amp;shared_columns</span>
+      - <span class="val">name</span>: <span class="str">id</span>
+        <span class="val">type</span>: Int64
+      - <span class="val">name</span>: <span class="str">name</span>
+        <span class="val">type</span>: Utf8
+
+  - <span class="val">name</span>: <span class="str">table_b</span>
+    <span class="val">columns</span>: <span class="kw">*shared_columns</span></pre>
+
+      <p style="margin-top: 1rem;">One definition. One update point. I knew DRY as a code principle. I'd never applied it to configuration until someone maintaining real infrastructure showed me why it matters.</p>
+    </div>
+
+    <div class="divider"><span>the honest version</span></div>
+
+    <h2>On Using AI — The Honest Version</h2>
+
+    <p>Early in the sprint, I was moving fast but understanding less. I was prompting the agent, running <code>coral source lint</code>, and submitting. Then the review comments started.</p>
+
+    <p>Each one forced me to slow down and understand <em>why</em> the code was wrong — not just apply the fix and move on. That's where the real learning happened. Not in the AI output, but in the gap between what the AI produced and what an experienced maintainer said it should be.</p>
+
+    <blockquote>
+      <p>Using AI without understanding the output isn't contributing — it's copy-pasting with extra steps.</p>
+    </blockquote>
+
+    <p>If you're using AI for open-source contribution: use it to implement faster. But own every decision it makes. If a maintainer asks why you chose <code>Utf8</code> over <code>Int64</code> for a numeric field, the AI can't answer for you. That answer has to come from your own understanding.</p>
+
+    <h2>A Note on the Sources Themselves</h2>
+
+    <p>Looking back at the list, the range makes me proud. <strong>Auth0</strong>, <strong>n8n</strong>, and <strong>Trello</strong> are real enterprise tools that teams use every day — and they're now SQL tables. <strong>OpenAlex</strong> gives researchers a way to query 250 million academic papers without touching an API client. <strong>MusicBrainz</strong> makes music metadata searchable in a way it wasn't before in Coral.</p>
+
+    <p>And then there's Open Notify. The fact that you can now write:</p>
+
+    <pre data-lang="SQL"><span class="kw">SELECT</span> latitude, longitude, timestamp
+<span class="kw">FROM</span> open_notify.iss_position;</pre>
+
+    <p>...and get the live location of the International Space Station in your terminal — that's what an open data ecosystem can actually be.</p>
+
+    <h2>What's Next</h2>
+
+    <p>The open review on OpenAlex has all requested changes addressed. Once it merges, I'm going back to building the agent — the thing that got me interested in source specs in the first place.</p>
+
+    <p>Whether or not anything wins, the sources are in the repo. Real contributions that other developers will use to query real data. That's a good week.</p>
+
+    <!-- Tags -->
+    <div class="tags">
+      <span class="tag">#OpenSource</span>
+      <span class="tag">#Coral</span>
+      <span class="tag">#SQL</span>
+      <span class="tag">#WeMakeDevs</span>
+      <span class="tag">#Hackathon</span>
+      <span class="tag">#AITools</span>
+      <span class="tag">#CSStudent</span>
+      <span class="tag">#India</span>
+    </div>
+
+  </article>
+</div>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="wrap">
+    <div class="footer-links">
+      <a href="https://github.com/withcoral/coral" target="_blank" class="footer-link">
+        <svg class="footer-link-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        Coral on GitHub
+      </a>
+      <a href="https://withcoral.com/docs" target="_blank" class="footer-link">
+        <svg class="footer-link-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 012.5 1h8.586a1.5 1.5 0 011.06.44l1.415 1.414A1.5 1.5 0 0114 3.914V13.5a1.5 1.5 0 01-1.5 1.5h-11A1.5 1.5 0 011 13.5v-11zm2 1v9h9V5H9.5A1.5 1.5 0 018 3.5V3.5H3zm6.5 0v1.5h1.5L9.5 3.5z"/></svg>
+        Coral Docs
+      </a>
+      <a href="https://withcoral.com/discord" target="_blank" class="footer-link">
+        <svg class="footer-link-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M13.545 2.907a13.227 13.227 0 00-3.257-1.011.05.05 0 00-.052.025c-.141.25-.297.577-.406.833a12.19 12.19 0 00-3.658 0 8.258 8.258 0 00-.412-.833.051.051 0 00-.052-.025c-1.125.194-2.22.534-3.257 1.011a.041.041 0 00-.021.018C.356 6.024-.213 9.047.066 12.032c.001.014.01.028.021.037a13.276 13.276 0 003.995 2.02.05.05 0 00.056-.019c.308-.42.582-.863.818-1.329a.05.05 0 00-.01-.059.051.051 0 00-.018-.011 8.875 8.875 0 01-1.248-.595.05.05 0 01-.02-.066.051.051 0 01.015-.019c.084-.063.168-.129.248-.195a.05.05 0 01.051-.007c2.619 1.196 5.454 1.196 8.041 0a.052.052 0 01.053.007c.08.066.164.132.248.195a.051.051 0 01-.004.085 8.254 8.254 0 01-1.249.594.05.05 0 00-.03.03.052.052 0 00.003.041c.24.465.515.909.817 1.329a.05.05 0 00.056.019 13.235 13.235 0 004.001-2.02.049.049 0 00.021-.037c.334-3.451-.559-6.449-2.366-9.106a.034.034 0 00-.02-.019zm-8.198 7.307c-.789 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612zm5.316 0c-.788 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612z"/></svg>
+        Coral Discord
+      </a>
+      <a href="https://www.wemakedevs.org" target="_blank" class="footer-link">
+        <svg class="footer-link-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M0 8a8 8 0 1116 0A8 8 0 010 8zm7.5-6.923c-.67.204-1.335.82-1.887 1.855A7.97 7.97 0 005.145 4H7.5V1.077zM4.09 4a9.267 9.267 0 01.64-1.539 6.7 6.7 0 01.597-.933A7.025 7.025 0 002.255 4H4.09zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a6.958 6.958 0 00-.656 2.5h2.49zM4.847 5a12.5 12.5 0 00-.338 2.5H7.5V5H4.847zM8.5 5v2.5h2.99a12.495 12.495 0 00-.337-2.5H8.5zM4.51 8.5a12.5 12.5 0 00.337 2.5H7.5V8.5H4.51zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5H8.5zM5.145 12c.138.386.295.744.468 1.068.552 1.035 1.218 1.65 1.887 1.855V12H5.145zm.182 2.472a6.696 6.696 0 01-.597-.933A9.268 9.268 0 014.09 12H2.255a7.024 7.024 0 003.072 2.472zM3.82 11a13.652 13.652 0 01-.312-2.5h-2.49c.062.89.291 1.733.656 2.5H3.82zm6.853 3.472A7.024 7.024 0 0013.745 12H11.91a9.27 9.27 0 01-.64 1.539 6.688 6.688 0 01-.597.933zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855.173-.324.33-.682.468-1.068H8.5zM11.988 11a13.573 13.573 0 00.313-2.5h2.489a6.96 6.96 0 01-.656 2.5h-2.146zm.48-3.5H12.5c-.026-.88-.12-1.716-.303-2.5H14.33c.365.767.594 1.61.657 2.5h-2.519z"/></svg>
+        WeMakeDevs
+      </a>
+      <a href="https://www.linkedin.com/in/kunal-kushwaha/" target="_blank" class="footer-link">
+        <svg class="footer-link-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.146C0 .513.526 0 1.175 0h13.65C15.474 0 16 .513 16 1.146v13.708c0 .633-.526 1.146-1.175 1.146H1.175C.526 16 0 15.487 0 14.854V1.146zm4.943 12.248V6.169H2.542v7.225h2.401zm-1.2-8.212c.837 0 1.358-.554 1.358-1.248-.015-.709-.52-1.248-1.342-1.248-.822 0-1.359.54-1.359 1.248 0 .694.521 1.248 1.327 1.248h.016zm4.908 8.212V9.359c0-.216.016-.432.08-.586.173-.431.568-.878 1.232-.878.869 0 1.216.662 1.216 1.634v3.865h2.401V9.25c0-2.22-1.184-3.252-2.764-3.252-1.274 0-1.845.7-2.165 1.193v.025h-.016a5.54 5.54 0 01.016-.025V6.169h-2.4c.03.678 0 7.225 0 7.225h2.4z"/></svg>
+        Kunal Kushwaha
+      </a>
+      <a href="https://github.com/wiz-abhi" target="_blank" class="footer-link">
+        <svg class="footer-link-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        My GitHub
+      </a>
+    </div>
+    <p class="footer-note">Thank you to <a href="https://github.com/jsummerfield" target="_blank">James Summerfield</a> for reviewing these PRs with real patience and detail, and to <a href="https://www.linkedin.com/in/kunal-kushwaha/" target="_blank">Kunal Kushwaha</a> and <a href="https://www.wemakedevs.org" target="_blank">WeMakeDevs</a> for organizing something worth showing up for.</p>
+  </div>
+</footer>
+
+<script>
+  const bar = document.getElementById('progress');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    bar.style.width = Math.min(pct, 100) + '%';
+  });
+</script>
+</body>
+</html>
